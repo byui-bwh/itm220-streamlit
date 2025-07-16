@@ -49,7 +49,7 @@ def load_passengers():
 @st.cache_data
 def load_chart_data():
     conn, tunnel = get_connection()
-    df = pd.read_sql("SELECT * FROM flight_view", conn)
+    df = pd.read_sql("SELECT * FROM airportdb.flight_view WHERE `date` BETWEEN '2015-08-01' and '2015-09-01'", conn)
     conn.close()
     tunnel.stop()
     return df
@@ -96,7 +96,9 @@ st.title("📊 User Management Dashboard")
 # Line chart from DB view
 st.subheader("📈 Flight Counts")
 chart_df = load_chart_data()
-st.line_chart(chart_df.set_index("airlinename")[["flights_count"]])
+chart_df['date'] = pd.to_datetime(chart_df['date'])
+pivot_df = chart_df.pivot(index='date', columns='airlinename', values='flights_count')
+st.line_chart(pivot_df)
 
 # Editable table
 st.subheader("👤 Manage Passengers (Add, Edit, Delete)")
