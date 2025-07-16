@@ -95,14 +95,14 @@ pipx is a tool to install and run Python CLI apps in isolated environments.
 2. .env will need to either MYSQL_PASSWORD_LOCAL={password value} or MYSQL_PASSWORD={password value}. I have both so I can switch back and forth between local and public hosted services.
 3. secrets.toml needs two sections:
    
-      [mysql]
-         host = "127.0.0.1"
-         port = {port DB is running on}
-         database = "{db name}"
-         user = "{db username}"
+      [MySQL]  
+      host = "127.0.0.1"  
+      port = {port DB is running on}  
+      database = "{db name}"  
+      user = "{db username}"  
       
-      [ssh]
-         ssh_host = "{VM public IP}"
-         ssh_user = "{ssh username}"
-         ssh_pem_path = "{path to private key}"
+      [ssh]  
+      ssh_host = "{VM public IP}"  
+      ssh_user = "{ssh username}"  
+      ssh_pem_path = "{path to private key}"  
 
