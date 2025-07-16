@@ -96,13 +96,13 @@ pipx is a tool to install and run Python CLI apps in isolated environments.
 3. secrets.toml needs two sections:
    
       [mysql]
-      host = "127.0.0.1"
-      port = {port DB is running on}
-      database = "{db name}"
-      user = "{db username}"
+         host = "127.0.0.1"
+         port = {port DB is running on}
+         database = "{db name}"
+         user = "{db username}"
       
       [ssh]
-      ssh_host = "{VM public IP}"
-      ssh_user = "{ssh username}"
-      ssh_pem_path = "{path to private key}"
+         ssh_host = "{VM public IP}"
+         ssh_user = "{ssh username}"
+         ssh_pem_path = "{path to private key}"
 
