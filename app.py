@@ -91,7 +91,7 @@ def hash_df(df):
 
 # ---------- STREAMLIT APP ----------
 
-st.title("📊 User Management Dashboard")
+st.title("📊 Flight Analytics and Passenger Dashboard")
 
 # Line chart from DB view
 st.subheader("📈 Flight Counts")
