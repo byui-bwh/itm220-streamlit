@@ -4,39 +4,54 @@ import mysql.connector
 import os
 import hashlib
 from mysql.connector import Error
+from sshtunnel import SSHTunnelForwarder
 from dotenv import load_dotenv
 load_dotenv()
 
 mysql_password = os.getenv("MYSQL_PASSWORD")
+mysql_password_local = os.getenv("MYSQL_PASSWORD_LOCAL")
+
+
+# Set up SSH tunnel
 
 
 # ---------- Database Connection ----------
 def get_connection():
     try:
+        server = SSHTunnelForwarder(
+        (st.secrets["ssh"]["ssh_host"], 22),
+        ssh_username=st.secrets["ssh"]["ssh_user"],
+        ssh_pkey=st.secrets["ssh"]["ssh_pem_path"],
+        remote_bind_address=(st.secrets["mysql"]["host"], st.secrets["mysql"]["port"]),
+            )
+        
+        server.start()
         conn = mysql.connector.connect(
             host=st.secrets["mysql"]["host"],
-            port=st.secrets["mysql"]["port"],
+            port=server.local_bind_port,
             database=st.secrets["mysql"]["database"],
             user=st.secrets["mysql"]["user"],
-            password=mysql_password
+            password=mysql_password_local
         )
-        return conn
+        return conn, server
     except Error as e:
         st.error(f"Error connecting to MySQL: {e}")
         return None
     
 @st.cache_data
 def load_passengers():
-    conn = get_connection()
+    conn, tunnel = get_connection()
     df = pd.read_sql("SELECT * FROM passenger", conn)
     conn.close()
+    tunnel.stop()
     return df
 
 @st.cache_data
 def load_chart_data():
-    conn = get_connection()
-    df = pd.read_sql("SELECT * FROM flight_view limit 200", conn)
+    conn, tunnel = get_connection()
+    df = pd.read_sql("SELECT * FROM flight_view", conn)
     conn.close()
+    tunnel.stop()
     return df
 
 def update_rows(updated_df, original_df):
