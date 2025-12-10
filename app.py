@@ -26,7 +26,19 @@ queries = {
     a.iata,
     a.airlinename,
     a.base_airport FROM flight AS f INNER JOIN airline AS a ON f.airline_id = a.airline_id""",
-    "conditional logic": "SELECT * FROM flight",
+    "conditional logic": """SELECT
+    flight_id,
+    flightno,
+    TIMESTAMPDIFF(MINUTE, departure, arrival) AS duration_minutes,
+    CASE
+        WHEN TIMESTAMPDIFF(MINUTE, departure, arrival) < 120
+            THEN 'Short Haul'
+        WHEN TIMESTAMPDIFF(MINUTE, departure, arrival) BETWEEN 120 AND 360
+            THEN 'Medium Haul'
+        ELSE 'Long Haul'
+    END AS flight_type
+FROM flight
+ORDER BY duration_minutes;""",
     "outer join": "SELECT * FROM flight",
     "aggregate function and GROUP BY": "SELECT * FROM flight",
     "subquery": "SELECT * FROM flight",
