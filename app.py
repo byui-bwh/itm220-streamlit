@@ -39,7 +39,7 @@ queries = {
     END AS flight_type
 FROM flight
 ORDER BY duration_minutes;""",
-    "outer join": "SELECT * FROM flight OUTER JOIN airline ON flight.airline_id = airline.airline_id",
+    "outer join": "SELECT * FROM flight LEFT OUTER JOIN airline ON flight.airline_id = airline.airline_id",
     "aggregate function and GROUP BY": "SELECT * FROM flight",
     "subquery": "SELECT * FROM flight",
     "window function": "SELECT * FROM flight"
