@@ -11,6 +11,28 @@ load_dotenv()
 mysql_password = os.getenv("MYSQL_PASSWORD")
 mysql_password_local = os.getenv("MYSQL_PASSWORD_LOCAL")
 
+# requirement queries:
+
+queries = {
+    "function": "SELECT CONCAT(firstname, ' ', lastname) AS fullname FROM employee",
+    "inner join": """SELECT     f.flight_id, 
+    f.flightno,
+    f.`from`   AS from_airport,
+    f.`to`     AS to_airport,
+    f.departure,
+    f.arrival,
+    f.airline_id AS flight_airline_id,
+    a.airline_id AS airline_airline_id,
+    a.iata,
+    a.airlinename,
+    a.base_airport FROM flight AS f INNER JOIN airline AS a ON f.airline_id = a.airline_id""",
+    "conditional logic": "SELECT * FROM flight",
+    "outer join": "SELECT * FROM flight",
+    "aggregate function and GROUP BY": "SELECT * FROM flight",
+    "subquery": "SELECT * FROM flight",
+    "window function": "SELECT * FROM flight"
+}
+
 
 # Set up SSH tunnel
 
@@ -45,6 +67,46 @@ def load_passengers():
     conn.close()
     tunnel.stop()
     return df
+
+# Helper function to deduplicate columns
+def dedupe_columns(df):
+    seen = {}
+    new_columns = []
+
+    for col in df.columns:
+        if col not in seen:
+            seen[col] = 0
+            new_columns.append(col)
+        else:
+            seen[col] += 1
+            new_columns.append(f"{col}_{seen[col]}")
+
+    df.columns = new_columns
+    return df
+
+
+# =============================
+# Run Query Function
+# =============================
+@st.cache_data(show_spinner=False)
+def run_query(sql: str, limit: int):
+    """
+    Executes a SQL query with a LIMIT clause
+    and returns a pandas DataFrame.
+    """
+    if limit:
+        sql = f"{sql} LIMIT {limit}"
+
+    conn, tunnel = get_connection()
+    df = pd.read_sql(sql, conn)
+    conn.close()
+    tunnel.stop()
+    # Auto-fix duplicate columns (student-friendly)
+    df = dedupe_columns(df)
+
+    return df
+
+
 
 @st.cache_data
 def load_chart_data():
@@ -164,4 +226,45 @@ with st.form("insert_form"):
             st.success(f"Passenger '{new_firstname}' '{new_lastname}' added.")
             st.rerun()
 
+# Selectbox for requirement queries with limit slider
+
+# =============================
+# UI for queries
+# =============================
+
+st.title("SQL Query Explorer")
+selected_option = st.selectbox(
+    "Choose a SQL concept:",
+    options=list(queries.keys())
+)
+
+# Row limit control
+row_limit = st.slider(
+    "Row limit",
+    min_value=10,
+    max_value=1000,
+    value=100,
+    step=10
+)
+# Show SQL toggle
+with st.expander("Preview SQL"):
+    st.code(queries[selected_option], language="sql")
+
+# Run Query Button
+if st.button("Run Query", type="primary"):
+    with st.spinner("Running query..."):
+        try:
+            df = run_query(queries[selected_option], row_limit)
+
+            st.success(f"Results for **{selected_option}**")
+            st.dataframe(df, use_container_width=True)
+
+            st.caption(f"Rows returned: {len(df)}")
+
+        except Exception as e:
+            st.error("Query execution failed")
+            st.exception(e)
+
+
+# End of Streamlit app
 
