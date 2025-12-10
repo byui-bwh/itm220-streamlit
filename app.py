@@ -69,16 +69,18 @@ def update_rows(updated_df, original_df):
     conn.close()
 
 def delete_rows(ids_to_delete):
-    conn = get_connection()
+    format_strings = ",".join( map(str, ids_to_delete))
+    print(f"format_strings: {format_strings}")
+    print(f"Deleting rows with IDs: {ids_to_delete}")
+    conn, tunnel = get_connection()
     cursor = conn.cursor()
-    format_strings = ','.join(['%s'] * len(ids_to_delete))
-    print(ids_to_delete)
-    cursor.execute(f"DELETE FROM passenger WHERE passenger_id IN ({format_strings})", tuple(ids_to_delete))
+
+    cursor.execute(f"DELETE FROM passenger WHERE passenger_id IN ({format_strings})")
     conn.commit()
     conn.close()
 
 def insert_row(passportno, firstname, lastname):
-    conn = get_connection()
+    conn, tunnel = get_connection()
     cursor = conn.cursor()
     cursor.execute("INSERT INTO passenger (passportno, firstname, lastname) VALUES (%s, %s, %s)", (passportno, firstname, lastname))
     conn.commit()
@@ -123,6 +125,7 @@ df = st.session_state.original_df.copy()
 if st.button("🗑️ Delete Selected Rows"):
     selected_ids = edited_df[edited_df["delete"] == True]["passenger_id"].tolist()
     if selected_ids:
+        print(f"Deleting rows with IDs: {selected_ids}")
         delete_rows(selected_ids)
         st.session_state.original_df = load_passengers()
         st.session_state.original_hash = hash_df(st.session_state.original_df)
