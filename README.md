@@ -100,7 +100,7 @@ pipx is a tool to install and run Python CLI apps in isolated environments.
 
 3. secrets.toml file needs to be in a directory named .streamlit in the project root directory.  secrets.toml needs two sections:
    
-      [MySQL]  
+      [mysql]  
       host = "127.0.0.1"  
       port = {port DB is running on}  
       database = "{db name}"  
